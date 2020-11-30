@@ -13,9 +13,9 @@ class BonchaqServiceProvider extends ServiceProvider
      * @var array
      */
     protected $policies = [
-        Models\BoncahqSubject::class => Policies\ContractSubject::class,
-        Models\BoncahqContract::class => Policies\Contract::class,
-        Models\BoncahqMaturity::class => Policies\Maturity::class,
+        Models\BonchaqSubject::class => Policies\ContractSubject::class,
+        Models\BonchaqContract::class => Policies\Contract::class,
+        Models\BonchaqMaturity::class => Policies\Maturity::class,
     ];
 
     /**
