@@ -120,6 +120,11 @@ class Contract extends Resource
                 ->required()
                 ->rules('required'), 
 
+            DateTime::make(__('End Date'), 'end_date')
+                ->required()
+                ->rules('required')
+                ->exceptOnForms(), 
+
             Medialibrary::make(__('Attachments'), 'attachments')
                 ->autouploading()
                 ->hideFromIndex()

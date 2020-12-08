@@ -94,4 +94,30 @@ class Helper
             CarbonInterface::DECEMBER  => 'December', 
         ];
     }
+
+    /**
+     * Returns array of periods with the equivalent days.
+     * 
+     * @return array
+     */
+    public static function periodEquivalentDays()
+    {
+        return [
+            static::HOURLY  => 1/24,
+            static::DAILY   => 1,
+            static::WEEKLY  => 7,
+            static::MONTHLY => 30,
+            static::YEARLY  => 365,
+        ];
+    }
+
+    /**
+     * Returns equivalent days of the given period.
+     * 
+     * @return int
+     */
+    public static function periodEquivalentDay(string $period): int
+    {
+        return static::periodEquivalentDays()[$period] ?? 1;
+    }
 }
