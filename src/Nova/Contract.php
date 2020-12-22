@@ -220,12 +220,12 @@ class Contract extends Resource
     public function contractableTitle()
     {  
         return with(Nova::resourceForModel($this->contractable), function($resource) {
-            if(is_null($resource) {
+            if(is_null($resource)) {
                 return __('Contractable : resource', [
                     'resource' => $this->contractable_type,
                 ]);
             }
-            
+
             return with(new $resource($this->contractable), function($resource) {
                 return $resource->title();
             });
