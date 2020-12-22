@@ -5,6 +5,7 @@ namespace Zareismail\Bonchaq\Nova;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Laravel\Nova\Nova; 
+use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Fields\{ID, Stack, Number, Select, Currency, DateTime, BelongsTo, HasMany}; 
 use DmitryBubyakin\NovaMedialibraryField\Fields\Medialibrary;
 use Zareismail\NovaContracts\Nova\User;
@@ -26,7 +27,7 @@ class Contract extends Resource
      *
      * @var array
      */
-    public static $with = ['subject', 'auth', 'contractable'];
+    public static $with = ['subject', 'auth'];
 
     /**
      * Get the fields displayed by the resource.
@@ -151,14 +152,56 @@ class Contract extends Resource
     }
 
     /**
+     * Build an "index" query for the given resource.
+     *
+     * @param  \Laravel\Nova\Http\Requests\NovaRequest  $request
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public static function indexQuery(NovaRequest $request, $query)
+    {
+        return $query->tap(function($query) {
+            $query->with('contractable', function($morphTo) {
+                return $morphTo->morphWith(Helper::contractables()->map(function($resource) {
+                    return $resource::$model;
+                })->all());
+            });
+        });
+    }
+
+    /**
      * Get the value that should be displayed to represent the resource.
      *
      * @return string
      */
     public function title()
     {
-        $resource = Nova::resourceForModel($this->contractable);
+        return $this->subjectTitle() .':'. $this->contractableTitle(); 
+    }
 
-        return  (new $resource($this->contractable))->title().': '.(new Subject($this->subject))->title();
+    /**
+     * Get the subject value that should be displayed to represent the resource.
+     *
+     * @return string
+     */
+    public function subjectTitle()
+    {
+        return with(new Subject($this->subject), function($resource) {
+            return $resource->title();
+        }); 
+    }
+
+    /**
+     * Get the contractable value that should be displayed to represent the resource.
+     *
+     * @return string
+     */
+    public function contractableTitle()
+    {  
+        return with(Nova::resourceForModel($this->contractable), function($resource) {
+            return with(new $resource($this->contractable), function($resource) {
+                return $resource->title();
+            });
+        }); 
     }
 }
