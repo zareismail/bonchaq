@@ -160,12 +160,16 @@ class Contract extends Resource
      */
     public static function indexQuery(NovaRequest $request, $query)
     {
-        return $query->tap(function($query) {
+        return $query->tap(function($query) use ($request) {
             $query->with('contractable', function($morphTo) {
                 return $morphTo->morphWith(Helper::contractables()->map(function($resource) {
                     return $resource::$model;
                 })->all());
             });
+
+            $query->when($request->user()->cant('create', static::newModel()), function($query) use ($request) {
+                $query->authenticate();
+            }); 
         });
     }
 
