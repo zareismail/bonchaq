@@ -5,9 +5,10 @@ namespace Zareismail\Bonchaq\Nova;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Laravel\Nova\Nova; 
-use Laravel\Nova\Fields\{ID, Number, Select, Currency, DateTime, BelongsTo, MorphTo, HasMany}; 
+use Laravel\Nova\Fields\{ID, Number, Select, Currency, DateTime, BelongsTo, HasMany}; 
 use DmitryBubyakin\NovaMedialibraryField\Fields\Medialibrary;
 use Zareismail\NovaContracts\Nova\User;
+use Zareismail\Fields\MorphTo;  
 use Armincms\Fields\Chain;  
 use Zareismail\Bonchaq\Helper;
 
@@ -52,7 +53,7 @@ class Contract extends Resource
             MorphTo::make(__('Register For'), 'contractable')
                 ->types(Helper::contractables()->all())
                 ->withoutTrashed()
-                ->searchable()
+                // ->searchable()
                 ->debounce(100), 
 
             Chain::make('periods', function() {
