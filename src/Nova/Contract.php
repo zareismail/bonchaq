@@ -11,7 +11,7 @@ use DmitryBubyakin\NovaMedialibraryField\Fields\Medialibrary;
 use Zareismail\NovaContracts\Nova\User;
 use Zareismail\Fields\MorphTo;  
 use Armincms\Fields\Chain;  
-use Zareismail\Bonchaq\Helper;
+use Zareismail\Bonchaq\Helper; 
 
 class Contract extends Resource
 {  
@@ -161,15 +161,26 @@ class Contract extends Resource
     public static function indexQuery(NovaRequest $request, $query)
     {
         return $query->tap(function($query) use ($request) {
-            $query->with('contractable', function($morphTo) {
-                return $morphTo->morphWith(Helper::contractables()->map(function($resource) {
-                    return $resource::$model;
-                })->all());
+            $contractables = Helper::contractables()->map(function($resource) {
+                return $resource::$model;
             });
 
-            $query->when($request->user()->cant('create', static::newModel()), function($query) use ($request) {
-                $query->authenticate();
-            }); 
+            $query->with('contractable', function($morphTo) use ($contractables) {
+                return $morphTo->morphWith($contractables->all());
+            });
+
+
+            $callback = function($query) use ($request, $contractables) {
+                return $query
+                    ->authenticate()
+                    ->orWhereHasMorph('contractable', $contractables->all(), function($query, $type) { 
+                        if(\Zareismail\NovaPolicy\Helper::isOwnable($type)) {
+                            $query->authenticate();
+                        }
+                    });
+            };
+
+            $query->when($request->user()->cant('create', static::newModel()), $callback); 
         });
     }
 
