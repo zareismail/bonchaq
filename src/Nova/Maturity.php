@@ -41,7 +41,7 @@ class Maturity extends Resource
                 ->withoutTrashed() 
                 ->searchable()
                 ->debounce(100)
-                ->readonly(! is_null($contract = $this->contract ?: $request->findParentModel() ))
+                ->readonly(! is_null($contract = $this->contract ?: $request->findParentModel()) && $request->isMethod('get'))
                 ->default($this->auth_id ?? $contract->auth_id ?? $request->user()->id)
                 ->canSee(function($request) {
                     return $request->user()->can('update', static::newModel());
@@ -108,6 +108,7 @@ class Maturity extends Resource
                 ->nullable(),
     	];
     }
+
     /**
      * Determine if this resource is available for navigation.
      *
