@@ -5,7 +5,7 @@ namespace Zareismail\Bonchaq\Nova;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Laravel\Nova\Nova; 
-use Laravel\Nova\Fields\{ID, Number, Select, Currency, DateTime, BelongsTo, HasMany}; 
+use Laravel\Nova\Fields\{ID, Stack, Number, Select, Currency, DateTime, BelongsTo, HasMany}; 
 use DmitryBubyakin\NovaMedialibraryField\Fields\Medialibrary;
 use Zareismail\NovaContracts\Nova\User;
 use Zareismail\Fields\MorphTo;  
@@ -26,7 +26,7 @@ class Contract extends Resource
      *
      * @var array
      */
-    public static $with = ['subject', 'auth'];
+    public static $with = ['subject', 'auth', 'contractable'];
 
     /**
      * Get the fields displayed by the resource.
@@ -119,12 +119,27 @@ class Contract extends Resource
 
             DateTime::make(__('Start Date'), 'start_date')
                 ->required()
-                ->rules('required'), 
+                ->rules('required')
+                ->hideFromIndex(), 
 
             DateTime::make(__('End Date'), 'end_date')
                 ->required()
                 ->rules('required')
-                ->exceptOnForms(), 
+                ->onlyOnDetail(), 
+
+            Stack::make(__('Period'), [
+                function() {
+                    return __('From:');
+                },
+
+                DateTime::make(__('Start Date'), 'start_date'),
+
+                function() {
+                    return __('Until:');
+                },
+
+                DateTime::make(__('Start Date'), 'start_date'),
+            ])->onlyOnIndex(), 
 
             Medialibrary::make(__('Attachments'), 'attachments')
                 ->autouploading()
