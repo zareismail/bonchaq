@@ -118,4 +118,14 @@ class Maturity extends Resource
     {
         return false;
     }
+
+    /**
+     * Get the text for the create resource button.
+     *
+     * @return string|null
+     */
+    public static function createButtonLabel()
+    {
+        return __('Record A Payment');
+    } 
 }
