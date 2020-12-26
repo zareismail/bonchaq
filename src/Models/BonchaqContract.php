@@ -119,7 +119,7 @@ class BonchaqContract extends AuthorizableModel implements HasMedia
 	 */
 	public function scopeStarted($query)
 	{ 
-		return $query->where($query->qualifyColumn('start_date'), '>=', now()); 
+		return $query->whereDate($query->qualifyColumn('start_date'), '<=', now()); 
 	} 
 
 	/**
@@ -130,6 +130,6 @@ class BonchaqContract extends AuthorizableModel implements HasMedia
 	 */
 	public function scopeInProgress($query)
 	{
-		return $query->started()->where($query->qualifyColumn('end_date'), '<=', now()); 
+		return $query->started()->whereDate($query->qualifyColumn('end_date'), '>=', now()); 
 	}
 }
