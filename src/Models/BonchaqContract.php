@@ -9,7 +9,7 @@ use Zareismail\Bonchaq\Helper;
 
 class BonchaqContract extends AuthorizableModel implements HasMedia
 { 
-	use HasMediaTrait;
+	use HasMediaTrait, InteractsWithMaturities;
 	
     /**
      * The attributes that should be cast.
@@ -33,6 +33,10 @@ class BonchaqContract extends AuthorizableModel implements HasMedia
     	static::saving(function($model) {
     		$model->fillEndDate();
     	}); 
+
+        static::created(function($model) {
+            $model->creatInstallments();
+        }); 
     }
 
     /**
@@ -97,21 +101,6 @@ class BonchaqContract extends AuthorizableModel implements HasMedia
 	} 
 
 	/**
-	 * Query the related Maturity.
-	 * 
-	 * @return  \Illuminate\Database\Eloquent\Relations\HasMany     
-	 */
-	public function maturities()
-	{ 
-		return $this->hasMany(BonchaqMaturity::class, 'contract_id');
-	} 
-
-	public function registerMediaCollections(): void
-	{ 
-	    $this->addMediaCollection('attachments');
-	}
-
-	/**
 	 * Query the started contracts.
 	 * 
 	 * @param \Illuminate\Database\Eloquent\Builder  $query
@@ -132,4 +121,9 @@ class BonchaqContract extends AuthorizableModel implements HasMedia
 	{
 		return $query->started()->whereDate($query->qualifyColumn('end_date'), '>=', now()); 
 	}
+
+    public function registerMediaCollections(): void
+    { 
+        $this->addMediaCollection('attachments');
+    }
 }

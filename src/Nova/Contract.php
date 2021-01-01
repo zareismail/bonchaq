@@ -231,4 +231,19 @@ class Contract extends Resource
             });
         }); 
     }
+
+    /**
+     * Get the cards available on the entity.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return array
+     */
+    public function cards(Request $request)
+    {
+        return [
+            Metrics\Costs::make()->width('1/2'), 
+
+            Metrics\Revenues::make()->width('1/2'),
+        ];
+    }
 }

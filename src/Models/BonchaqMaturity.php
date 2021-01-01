@@ -2,13 +2,14 @@
 
 namespace Zareismail\Bonchaq\Models;
 
-use Zareismail\NovaContracts\Models\AuthorizableModel;
 use Spatie\MediaLibrary\HasMedia\HasMedia;
 use Spatie\MediaLibrary\HasMedia\HasMediaTrait;
+use Zareismail\NovaContracts\Models\AuthorizableModel;
+use Zareismail\Contracts\Concerns\InteractsWithDetails;
 
 class BonchaqMaturity extends AuthorizableModel implements HasMedia
 { 
-	use HasMediaTrait;
+	use HasMediaTrait, InteractsWithDetails;
 	
     /**
      * The attributes that should be cast.

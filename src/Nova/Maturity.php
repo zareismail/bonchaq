@@ -17,6 +17,13 @@ class Maturity extends Resource
     public static $model = \Zareismail\Bonchaq\Models\BonchaqMaturity::class;
 
     /**
+     * The number of resources to show per page via relationships.
+     *
+     * @var int
+     */
+    public static $perPageViaRelationship = 12;
+
+    /**
      * The relationships that should be eager loaded when performing an index query.
      *
      * @var array
@@ -96,17 +103,36 @@ class Maturity extends Resource
 
             Currency::make(__('Payment'), 'amount')
                 ->required()
-                ->rules('required'), 
+                ->rules('required')
+                ->sortable(), 
+
+            Text::make(__('Payment Tracking Code'), 'tracking_code')
+                ->required()
+                ->rules('required')
+                ->sortable(), 
 
             DateTime::make(__('Payment Date'), 'payment_date')
                 ->required()
-                ->rules('required'), 
+                ->rules('required')
+                ->sortable(), 
 
             Medialibrary::make(__('Attachments'), 'attachments')
                 ->autouploading()
                 ->hideFromIndex()
                 ->nullable(),
     	];
+    }
+
+    /**
+     * Apply any applicable orderings to the query.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  array  $orderings
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    protected static function applyOrderings($query, array $orderings)
+    {
+        return parent::applyOrderings($query, $orderings ?: ['payment_date' => 'asc']);
     }
 
     /**
@@ -128,5 +154,29 @@ class Maturity extends Resource
     public static function createButtonLabel()
     {
         return __('Record A Payment');
+    } 
+
+    /**
+     * Determine if the current user can create new resources.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return bool
+     */
+    public static function authorizedToCreate(Request $request)
+    {
+        return false;
+    }
+
+    /**
+     * Determine if the current user can create new resources or throw an exception.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return void
+     *
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
+    public static function authorizeToCreate(Request $request)
+    {
+        return false;
     } 
 }
