@@ -115,6 +115,21 @@ class Maturity extends Resource
     }
 
     /**
+     * Get the value that should be displayed to represent the resource.
+     *
+     * @return string
+     */
+    public function title()
+    {
+        $contract = new Contract($this->contract);
+
+        return __('Due :number [:contract]', [
+            'number' => $this->installment,
+            'contract' => $contract->title(),
+        ]);
+    }
+
+    /**
      * Apply any applicable orderings to the query.
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $query
