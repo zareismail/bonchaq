@@ -54,7 +54,8 @@ class Maturity extends Resource
                     return $request->user()->can('update', static::newModel());
                 }), 
 
-            Number::make(__('Installment'), 'installment'),
+            Number::make(__('Due'), 'installment')
+                ->sortable(),
 
             $this->mergeWhen(! $request->isUpdateOrUpdateAttachedRequest() && $contract, function() use ($contract) {
                 return [ 
@@ -73,33 +74,21 @@ class Maturity extends Resource
                         ->readonly()
                         ->withMeta([
                             'value' => ($sum = $contract->maturities->where('id', '<=', $this->id ?? $contract->maturities->max('id'))->sum('amount'))
-                        ]),  
+                        ]),   
 
-                    Number::make(__('Current installment'), 'installment')
+                    Currency::make(__('Debt until here'), function() use ($contract, $sum) {
+                            return $contract->installments * $contract->amount - $sum;
+                        })
                         ->required()
                         ->rules('required')
-                        ->readonly()
-                        ->onlyOnForms()
-                        ->hideWhenUpdating()
-                        ->withMeta([
-                            'value' => $contract->maturities->count() + ($this->exists ? 0:1)
-                        ]), 
+                        ->readonly(),  
 
-                    Currency::make(__('Debt until here'), 'amount')
+                    Currency::make(__('Lacks'), function() use ($contract) {
+                            return $contract->amount - $this->amount;
+                        })
                         ->required()
                         ->rules('required')
-                        ->readonly()
-                        ->withMeta([
-                            'value' => ($contract->installments * $contract->amount) - $sum
-                        ]),  
-
-                    Currency::make(__('Lacks'), 'amount')
-                        ->required()
-                        ->rules('required')
-                        ->readonly()
-                        ->withMeta([
-                            'value' => $sum - ($contract->maturities->where('id', '<=', $this->id ?? $contract->maturities->max('id'))->count() * $contract->amount)
-                        ]),  
+                        ->readonly(),  
                 ];
             }),
 
