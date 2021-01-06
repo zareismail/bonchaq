@@ -23,7 +23,7 @@ trait InteractsWithMaturities
      */
     public function creatInstallments()
     {
-        collect(range(1, $this->installments + 1))->each(function($installment) {
+        collect(range(1, $this->installments))->each(function($installment) {
             $this->fillMaturity($installment)->save();
         });
     }
@@ -38,8 +38,9 @@ trait InteractsWithMaturities
     {
         return (new BonchaqMaturity)->forceFill([
             'payment_date'  => $this->calculateInstallmentsDate($installment),
-            'auth_id'       => $this->auth_id,
+            'installment'   => $this->installment,
             'contract_id'   => $this->getKey(),
+            'auth_id'       => $this->auth_id,
             'details'       => [],
         ]);
     }
