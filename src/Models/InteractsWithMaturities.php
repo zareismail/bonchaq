@@ -38,7 +38,7 @@ trait InteractsWithMaturities
     {
         return (new BonchaqMaturity)->forceFill([
             'payment_date'  => $this->calculateInstallmentsDate($installment),
-            'installment'   => $this->installment,
+            'installment'   => $installment,
             'contract_id'   => $this->getKey(),
             'auth_id'       => $this->auth_id,
             'details'       => [],

@@ -54,6 +54,8 @@ class Maturity extends Resource
                     return $request->user()->can('update', static::newModel());
                 }), 
 
+            Number::make(__('Installment'), 'installment'),
+
             $this->mergeWhen(! $request->isUpdateOrUpdateAttachedRequest() && $contract, function() use ($contract) {
                 return [ 
                     Currency::make(__('Installment Amount'), 'amount')
