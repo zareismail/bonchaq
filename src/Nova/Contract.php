@@ -62,6 +62,8 @@ class Contract extends Resource
                     Select::make(__('Payment Period'), 'period')
                         ->options(Helper::periods())
                         ->default(Helper::MONTHLY)
+                        ->required()
+                        ->rules('required'),
                 ];
             }),
 
@@ -70,7 +72,9 @@ class Contract extends Resource
                     case Helper::DAILY:
                         return [
                             Select::make(__('Which Hour'), 'maturity')
-                                ->options(array_combine(range(1, 24), range(1, 24))),
+                                ->options(array_combine(range(1, 24), range(1, 24)))
+                                ->required()
+                                ->rules('required'),
                         ];
                         break;
 
@@ -78,21 +82,27 @@ class Contract extends Resource
                         return [
                             Select::make(__('Which Day'), 'maturity')
                                 ->options(Helper::getDays())
-                                ->default(Carbon::getWeekStartsAt()),
+                                ->default(Carbon::getWeekStartsAt())
+                                ->required()
+                                ->rules('required'),
                         ];
                         break;
 
                     case Helper::MONTHLY:
                         return [
                             Select::make(__('Which Day'), 'maturity')
-                                ->options(array_combine(range(1, 30), range(1, 30))),
+                                ->options(array_combine(range(1, 30), range(1, 30)))
+                                ->required()
+                                ->rules('required'),
                         ];
                         break;
 
                     case Helper::YEARLY:
                         return [
                             Select::make(__('Which Month'), 'maturity')
-                                ->options(Helper::getMonths()),
+                                ->options(Helper::getMonths())
+                                ->required()
+                                ->rules('required'),
                         ];
                         break;
                     
@@ -121,7 +131,8 @@ class Contract extends Resource
             DateTime::make(__('Start Date'), 'start_date')
                 ->required()
                 ->rules('required')
-                ->hideFromIndex(), 
+                ->hideFromIndex()
+                ->default(now()), 
 
             DateTime::make(__('End Date'), 'end_date')
                 ->required()
