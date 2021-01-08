@@ -68,27 +68,19 @@ class Maturity extends Resource
                             'value' => $contract->amount
                         ]), 
 
-                    Currency::make(__('Payments Total'), 'amount')
-                        ->required()
-                        ->rules('required')
-                        ->readonly()
-                        ->withMeta([
-                            'value' => ($sum = $contract->maturities->where('id', '<=', $this->id ?? $contract->maturities->max('id'))->sum('amount'))
-                        ]),   
+                    Currency::make(__('Payments Total'), function() use ($contract) {
+                        return $contract->maturities->between(null, $this->installment)->totalPayment();
+                    }),   
 
-                    Currency::make(__('Debt until here'), function() use ($contract, $sum) {
-                            return $contract->installments * $contract->amount - $sum;
-                        })
-                        ->required()
-                        ->rules('required')
-                        ->readonly(),  
+                    Currency::make(__('Total Lacks'), function() use ($contract) {
+                        $sum = $contract->maturities->between(null, $this->installment)->totalPayment();
 
-                    Currency::make(__('Lacks'), function() use ($contract) {
-                            return $contract->amount - $this->amount;
-                        })
-                        ->required()
-                        ->rules('required')
-                        ->readonly(),  
+                        return $contract->installments * $contract->amount - $sum;
+                    }),  
+
+                    Currency::make(__('Deficit'), function($amount) use ($contract) {
+                        return $this->amount ? $contract->amount - $this->amount : 0;
+                    }),  
                 ];
             }),
 

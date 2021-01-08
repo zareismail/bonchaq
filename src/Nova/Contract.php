@@ -118,7 +118,7 @@ class Contract extends Resource
                 ->default(1)
                 ->min(1),
 
-            Currency::make(__('Advance Payment'), 'advance_payment')
+            Currency::make(__('Deposit Amount'), 'advance_payment')
                 ->required()
                 ->rules('required')
                 ->default(0.00), 
