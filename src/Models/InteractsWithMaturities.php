@@ -23,7 +23,7 @@ trait InteractsWithMaturities
      */
     public function creatInstallments()
     {
-        collect(range(1, $this->installments))->each(function($installment) {
+        collect()->range(0, $this->installments)->each(function($installment) {
             $this->fillMaturity($installment)->save();
         });
     }
@@ -53,8 +53,34 @@ trait InteractsWithMaturities
      */
     public function calculateInstallmentsDate(int $installment)
     {
-        return $this->start_date->addDays(
-            Helper::periodEquivalentDay($this->period) * $installment
-        );
+        switch ($this->period) {
+            case 'yearly':
+                return $this->start_date->addYears($installment)->setUnit(
+                    'month', $this->maturity
+                );
+                break;
+
+            case 'monthly':
+                return $this->start_date->addMonths($installment)->setUnit(
+                    'day', $this->maturity
+                );
+                break;
+
+            case 'weekly':
+                return $this->start_date->addWeeks($installment)->setUnit(
+                    'day', $this->maturity
+                );
+                break;
+
+            case 'daily':
+                return $this->start_date->addDays($installment)->setUnit(
+                    'hour', $this->maturity
+                );
+                break;
+
+            case 'hourly':
+                return $this->start_date->addHours($installment);
+                break; 
+        } 
     }
 }
