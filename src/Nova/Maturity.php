@@ -55,7 +55,8 @@ class Maturity extends Resource
                 }), 
 
             Number::make(__('Due'), 'installment')
-                ->sortable(),
+                ->sortable()
+                ->exceptOnForms(),
 
             $this->mergeWhen(! $request->isUpdateOrUpdateAttachedRequest() && $contract, function() use ($contract) {
                 return [ 
@@ -84,6 +85,13 @@ class Maturity extends Resource
                 ];
             }),
 
+            Currency::make(__('Balance'), 'amount') 
+                ->readonly()
+                ->onlyOnForms()
+                ->withMeta([
+                    'value' => optional($this->contract)->amount,
+                ]),
+
             Currency::make(__('Payment'), 'amount')
                 ->required()
                 ->rules('required')
@@ -97,7 +105,8 @@ class Maturity extends Resource
             DateTime::make(__('Payment Date'), 'payment_date')
                 ->required()
                 ->rules('required')
-                ->sortable(), 
+                ->sortable()
+                ->exceptOnForms(), 
 
             Medialibrary::make(__('Attachments'), 'attachments')
                 ->autouploading()
