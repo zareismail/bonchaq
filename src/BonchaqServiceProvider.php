@@ -43,6 +43,10 @@ class BonchaqServiceProvider extends ServiceProvider
             Nova\Contract::class,
             Nova\Maturity::class,
         ]);
+
+        LaravelNova::dashboards([
+            Nova\Dashboards\ContractsReport::make(),
+        ]);
     }
 
     /**
