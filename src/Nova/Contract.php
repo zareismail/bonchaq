@@ -266,6 +266,23 @@ class Contract extends Resource
     }
 
     /**
+     * Get the filters available on the entity.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return array
+     */
+    public function filters(Request $request)
+    {
+        return [
+            Filters\MinAmount::make(),
+            Filters\MaxAmount::make(),
+            Filters\Period::make(),
+            Filters\Subject::make(), 
+            Filters\Resource::make(), 
+        ];
+    }
+
+    /**
      * Apply the search query to the query.
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $query
