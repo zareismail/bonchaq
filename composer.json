@@ -8,6 +8,7 @@
     "license": "MIT",
     "require": {
         "php": ">=7.1.0",
+        "optimistdigital/nova-input-filter": "^1.0",
         "zareismail/nova-cascade": "~0.1",
         "zareismail/nova-currency": "~0.1",
         "zareismail/glance": "dev-master"
@@ -28,5 +29,5 @@
         "sort-packages": true
     },
     "minimum-stability": "dev",
-    "prefer-stable": true 
+    "prefer-stable": true
 }
