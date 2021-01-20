@@ -30,6 +30,15 @@ class Contract extends Resource
     public static $with = ['subject', 'auth'];
 
     /**
+     * The columns that should be searched.
+     *
+     * @var array
+     */
+    public static $search = [
+        'contractable_type', 'period'
+    ];
+
+    /**
      * Get the fields displayed by the resource.
      *
      * @param  \Illuminate\Http\Request  $request

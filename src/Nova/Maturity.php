@@ -31,6 +31,15 @@ class Maturity extends Resource
     public static $with = ['contract', 'auth'];
 
     /**
+     * The columns that should be searched.
+     *
+     * @var array
+     */
+    public static $search = [
+        'tracking_code'
+    ];
+
+    /**
      * Get the fields displayed by the resource.
      *
      * @param  \Illuminate\Http\Request  $request

@@ -26,6 +26,6 @@ abstract class Resource extends BaseResource
      * @var array
      */
     public static $search = [
-        'id', 'name'
+        'name'
     ];
 }
