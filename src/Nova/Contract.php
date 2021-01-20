@@ -184,14 +184,14 @@ class Contract extends Resource
             $morphs = Helper::morphs();
 
             $query->with('contractable', function($morphTo) use ($morphs) {
-                return $morphTo->morphWith($morphs->all());
+                return $morphTo->morphWith($morphs);
             });
 
 
             $callback = function($query) use ($request, $morphs) {
                 return $query
                     ->authenticate()
-                    ->orWhereHasMorph('contractable', $morphs->all(), function($query, $type) { 
+                    ->orWhereHasMorph('contractable', $morphs, function($query, $type) { 
                         if(\Zareismail\NovaPolicy\Helper::isOwnable($type)) {
                             $query->authenticate();
                         }
