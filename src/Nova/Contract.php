@@ -181,19 +181,17 @@ class Contract extends Resource
     public static function indexQuery(NovaRequest $request, $query)
     {
         return $query->tap(function($query) use ($request) {
-            $contractables = Helper::contractables()->map(function($resource) {
-                return $resource::$model;
+            $morphs = Helper::morphs();
+
+            $query->with('contractable', function($morphTo) use ($morphs) {
+                return $morphTo->morphWith($morphs->all());
             });
 
-            $query->with('contractable', function($morphTo) use ($contractables) {
-                return $morphTo->morphWith($contractables->all());
-            });
 
-
-            $callback = function($query) use ($request, $contractables) {
+            $callback = function($query) use ($request, $morphs) {
                 return $query
                     ->authenticate()
-                    ->orWhereHasMorph('contractable', $contractables->all(), function($query, $type) { 
+                    ->orWhereHasMorph('contractable', $morphs->all(), function($query, $type) { 
                         if(\Zareismail\NovaPolicy\Helper::isOwnable($type)) {
                             $query->authenticate();
                         }
@@ -265,5 +263,24 @@ class Contract extends Resource
 
             Metrics\Revenues::make()->width('1/2'),
         ];
+    }
+
+    /**
+     * Apply the search query to the query.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string  $search
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    protected static function applySearch($query, $search)
+    {
+        return parent::applySearch($query, $search)
+                ->orWhereHasMorph('contractable', Helper::morphs(), function($morphTo, $type) use ($search) {
+                    $resource = Nova::resourceForModel($type);
+
+                    foreach ($resource::searchableColumns() as $column) {
+                        $morphTo->orWhere($morphTo->qualifyColumn($column), 'like', '%'.$search.'%');
+                    } 
+                });
     }
 }

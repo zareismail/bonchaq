@@ -63,6 +63,18 @@ class Helper
     } 
 
     /**
+     * Return Nova's contractable morphs.
+     * 
+     * @return \Laravel\Nova\ResourceCollection
+     */
+    public static function morphs()
+    {
+        return static::contractables()->map(function($resource) {
+            return $resource::$model;
+        })->all();
+    } 
+
+    /**
      * Get the days of the week.
      *
      * @return array
