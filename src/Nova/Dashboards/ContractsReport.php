@@ -264,8 +264,10 @@ class ContractsReport extends Dashboard
                         'label' => __('Payment'),
                         'borderColor' => '#f7a35c',
                         'data' => collect($this->months())->map(function($month, $key) use ($subject) {
-                            return $subject->contracts->flatMap->maturities->filter(function($maturity) use ($key) { 
-                                return $maturity->payment_date->lte(now()->addMonths($key));
+                            $months = collect($this->months())->slice(0, $key+1);
+
+                            return $subject->contracts->flatMap->maturities->filter(function($maturity) use ($months) { 
+                                return $months->contains($maturity->payment_date->format($this->dateFormat())); 
                             })->sum('amount');
                         })->all(),
                     ],[
