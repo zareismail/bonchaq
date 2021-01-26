@@ -299,6 +299,10 @@ class Contract extends Resource
                     foreach ($resource::searchableColumns() as $column) {
                         $query->orWhere($query->qualifyColumn($column), 'like', '%'.$search.'%');
                     }  
+
+                    if(method_exists($resource, 'applyContractSearch')) {
+                        $resource::applyContractSearch($query, $search);  
+                    }
                 });
             }); 
         });
