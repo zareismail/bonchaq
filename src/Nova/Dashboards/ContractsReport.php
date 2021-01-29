@@ -218,6 +218,10 @@ class ContractsReport extends Dashboard
             }
         ])->get()->flatMap(function($subject) {
             $balance = $subject->contracts->sum('amount');
+            $maturities = $subject->contracts->flatMap->maturities;
+            $payments = $subject->contracts->flatMap->maturities->groupBy(function($maturity) {
+                return $maturity->payment_date->format($this->dateFormat());
+            })->keys();
 
             return [
                 (new LineChart())
@@ -230,8 +234,8 @@ class ContractsReport extends Dashboard
                         'barPercentage' => 0.5,
                         'label' => __('Payment'),
                         'borderColor' => '#f7a35c',
-                        'data' => collect($this->months())->map(function($month) use ($subject) {
-                            return $subject->contracts->flatMap->maturities->filter(function($maturity) use ($month) { 
+                        'data' => collect($this->months())->map(function($month) use ($maturities) {
+                            return $maturities->filter(function($maturity) use ($month) { 
                                 return $maturity->payment_date->format($this->dateFormat()) === $month;
                             })->sum('amount');
                         })->all(),
@@ -239,8 +243,8 @@ class ContractsReport extends Dashboard
                         'barPercentage' => 0.5,
                         'label' => __('Balance'),
                         'borderColor' => '#90ed7d',
-                        'data' => collect($this->months())->map(function($month, $key) use ($balance) {
-                            return $balance;
+                        'data' => collect($this->months())->map(function($month, $key) use ($balance, $payments) {
+                            return $payments->contains($month) ? $balance : 0;
                         })->all(),
                     ]))
                     ->options([
@@ -263,10 +267,10 @@ class ContractsReport extends Dashboard
                         'barPercentage' => 0.5,
                         'label' => __('Payment'),
                         'borderColor' => '#f7a35c',
-                        'data' => collect($this->months())->map(function($month, $key) use ($subject) {
+                        'data' => collect($this->months())->map(function($month, $key) use ($maturities) {
                             $months = collect($this->months())->slice(0, $key+1);
 
-                            return $subject->contracts->flatMap->maturities->filter(function($maturity) use ($months) { 
+                            return $maturities->filter(function($maturity) use ($months) { 
                                 return $months->contains($maturity->payment_date->format($this->dateFormat())); 
                             })->sum('amount');
                         })->all(),
@@ -274,8 +278,8 @@ class ContractsReport extends Dashboard
                         'barPercentage' => 0.5,
                         'label' => __('Balance'),
                         'borderColor' => '#90ed7d',
-                        'data' => collect($this->months())->map(function($month, $key) use ($balance) {
-                            return $balance * ($key + 1);
+                        'data' => collect($this->months())->map(function($month, $key) use ($balance, $payments) {
+                            return $payments->contains($month) ? $balance * ($key + 1) : 0;
                         })->all(),
                     ]))
                     ->options([
