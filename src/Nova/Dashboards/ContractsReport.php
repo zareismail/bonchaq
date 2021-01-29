@@ -39,13 +39,14 @@ class ContractsReport extends Dashboard
                 ->displayUsingLabels()
                 ->default('revenue')
                 ->withMeta([
-                    'width' => 'w-1/5'
+                    'width' => 'w-1/5',
+                    'value' => $request->get('revenue', 'revenue'),
                 ]),  
 
-            DateTime::make(__('From Date'), 'from_date', function($value) {
-                if(! is_null($value)) {
-                    return \Carbon\Carbon::create($value)->format('Y-m-d H:i:s.u'); 
-                }
+            DateTime::make(__('From Date'), 'from_date', function($value) { 
+                $date = is_null($value) ? now()->subMonths(6) : \Carbon\Carbon::create($value);
+                
+                return $date->format('Y-m-d H:i:s.u');
             })  
                 ->nullable()
                 ->help($request->filled('from_date') ? __('Filtered by :date', [
@@ -57,9 +58,9 @@ class ContractsReport extends Dashboard
                 ]),
 
             DateTime::make(__('To Date'), 'to_date', function($value) {
-                if(! is_null($value)) {
-                    return \Carbon\Carbon::create($value)->format('Y-m-d H:i:s.u'); 
-                }
+                $date = is_null($value) ? now()->addMonths(5) : \Carbon\Carbon::create($value);
+
+                return $date->format('Y-m-d H:i:s.u'); 
             })  
                 ->nullable()
                 ->help($request->filled('to_date') ? __('Filtered by :date', [
@@ -178,14 +179,16 @@ class ContractsReport extends Dashboard
                 $query
                     ->when(request()->input('revenue') === 'expenditures', function($query) {
                         $query->authenticate();
+                    }, function($query) {
+                        $query->where('auth_id', '!=', request()->user()->id);
                     }) 
                     ->with([
                         'maturities' => function($query) {
-                            $query ->when(request()->filled('from_date'), function($query) {
-                                $query->where('payment_date', '>=', request()->get('from_date'));
+                            $query->when(request()->filled('from_date'), function($query) {
+                                $query->whereDate('payment_date', '>=', request()->get('from_date'));
                             })
                             ->when(request()->filled('to_date'), function($query) {
-                                $query->where('payment_date', '<=', request()->get('to_date'));
+                                $query->whereDate('payment_date', '<=', request()->get('to_date'));
                             });
                         }
                     ])
@@ -249,7 +252,7 @@ class ContractsReport extends Dashboard
                     ]))
                     ->options([
                         'xaxis' => [
-                            'categories' => $this->months()
+                            'categories' => $this->categories(),
                         ], 
                     ])
                     ->width('full')
@@ -284,7 +287,7 @@ class ContractsReport extends Dashboard
                     ]))
                     ->options([
                         'xaxis' => [
-                            'categories' => $this->months()
+                            'categories' => $this->categories(),
                         ],
                     ])
                     ->width('full')
@@ -302,21 +305,38 @@ class ContractsReport extends Dashboard
      */
     public function months()
     {
-        return [
-            now()->format($this->dateFormat()),
-            now()->addMonths(1)->format($this->dateFormat()),
-            now()->addMonths(2)->format($this->dateFormat()),
-            now()->addMonths(3)->format($this->dateFormat()),
-            now()->addMonths(4)->format($this->dateFormat()),
-            now()->addMonths(5)->format($this->dateFormat()),
-            now()->addMonths(6)->format($this->dateFormat()),
-            now()->addMonths(7)->format($this->dateFormat()),
-            now()->addMonths(8)->format($this->dateFormat()),
-            now()->addMonths(9)->format($this->dateFormat()),
-            now()->addMonths(10)->format($this->dateFormat()),
-            now()->addMonths(11)->format($this->dateFormat()),
-        ];
+        return collect($this->duration())->map->format($this->dateFormat())->all();
     }
+
+    public function categories()
+    {
+        return collect($this->months())->map(function($date) {
+            return now()->format($this->dateFormat()) == $date ? now()->format('Y/M') : $date;
+        })->all();
+    }
+
+    /**
+     * Returns an array of the year months.
+     * 
+     * @return array
+     */
+    public function duration()
+    {
+        return [ 
+            now()->subMonths(6),
+            now()->subMonths(5),
+            now()->subMonths(4),
+            now()->subMonths(3),
+            now()->subMonths(2),
+            now()->subMonths(1),
+            now(),
+            now()->addMonths(1),
+            now()->addMonths(2),
+            now()->addMonths(3),
+            now()->addMonths(4),
+            now()->addMonths(5),
+        ];
+    } 
 
     /**
      * Returns the month format string.
