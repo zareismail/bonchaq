@@ -52,10 +52,7 @@ class Contract extends Resource
             BelongsTo::make(__('Payer'), 'auth', User::class)
                 ->withoutTrashed() 
                 ->searchable()
-                ->debounce(100)
-                ->canSee(function($request) {
-                    return $request->user()->can('forceDelete', static::newModel());
-                }),  
+                ->debounce(100),  
 
             BelongsTo::make(__('Contract Subject'), 'subject', Subject::class)
                 ->withoutTrashed(),
