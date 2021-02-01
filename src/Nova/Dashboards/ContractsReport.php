@@ -44,7 +44,7 @@ class ContractsReport extends Dashboard
                 ]),  
 
             DateTime::make(__('From Date'), 'from_date', function($value) { 
-                $date = is_null($value) ? now()->subMonths(6) : \Carbon\Carbon::create($value);
+                $date = is_null($value) ? now()->startOfMonth()->subMonths(11) : \Carbon\Carbon::create($value);
                 
                 return $date->format('Y-m-d H:i:s.u');
             })  
@@ -54,11 +54,11 @@ class ContractsReport extends Dashboard
                 ]) : '')
                 ->withMeta([
                     'width' => 'w-2/5', 
-                    'placeholder' => $request->get('to_date')
+                    'placeholder' => $request->get('from_date')
                 ]),
 
             DateTime::make(__('To Date'), 'to_date', function($value) {
-                $date = is_null($value) ? now()->addMonths(5) : \Carbon\Carbon::create($value);
+                $date = is_null($value) ? now()->endOfMonth() : \Carbon\Carbon::create($value);
 
                 return $date->format('Y-m-d H:i:s.u'); 
             })  
@@ -219,12 +219,12 @@ class ContractsReport extends Dashboard
                         ); 
                     });
             }
-        ])->get()->flatMap(function($subject) {
-            $balance = $subject->contracts->sum('amount');
-            $maturities = $subject->contracts->flatMap->maturities;
+        ])->get()->flatMap(function($subject) { 
             $payments = $subject->contracts->flatMap->maturities->groupBy(function($maturity) {
-                return $maturity->payment_date->format($this->dateFormat());
-            })->keys();
+                return $maturity->payment_date->startOfMonth()->format($this->dateFormat());
+            });
+            $sum = $payments->map->sum('amount');
+            $balance = $payments->map->sum('contract.amount');
 
             return [
                 (new LineChart())
@@ -237,22 +237,16 @@ class ContractsReport extends Dashboard
                         'barPercentage' => 0.5,
                         'label' => __('Payment'),
                         'borderColor' => '#f7a35c',
-                        'data' => collect($this->months())->map(function($month) use ($maturities) {
-                            return $maturities->filter(function($maturity) use ($month) { 
-                                return $maturity->payment_date->format($this->dateFormat()) === $month;
-                            })->sum('amount');
-                        })->all(),
+                        'data' => $sum->values()->all(),
                     ],[
                         'barPercentage' => 0.5,
                         'label' => __('Balance'),
                         'borderColor' => '#90ed7d',
-                        'data' => collect($this->months())->map(function($month, $key) use ($balance, $payments) {
-                            return $payments->contains($month) ? $balance : 0;
-                        })->all(),
+                        'data' => $balance->values()->all(),
                     ]))
                     ->options([
                         'xaxis' => [
-                            'categories' => $this->categories(),
+                            'categories' => $payments->keys()->all(),
                         ], 
                     ])
                     ->width('full')
@@ -270,24 +264,24 @@ class ContractsReport extends Dashboard
                         'barPercentage' => 0.5,
                         'label' => __('Payment'),
                         'borderColor' => '#f7a35c',
-                        'data' => collect($this->months())->map(function($month, $key) use ($maturities) {
-                            $months = collect($this->months())->slice(0, $key+1);
-
-                            return $maturities->filter(function($maturity) use ($months) { 
-                                return $months->contains($maturity->payment_date->format($this->dateFormat())); 
-                            })->sum('amount');
-                        })->all(),
+                        'data' => $sum->map(function($value, $date) use ($sum) {
+                            return $sum->takeUntil(function($value, $key) use ($date) {
+                                return $date == $key;
+                            })->sum() + $value;
+                        })->values()->all(),
                     ],[
                         'barPercentage' => 0.5,
                         'label' => __('Balance'),
                         'borderColor' => '#90ed7d',
-                        'data' => collect($this->months())->map(function($month, $key) use ($balance, $payments) {
-                            return $payments->contains($month) ? $balance * ($key + 1) : 0;
-                        })->all(),
+                        'data' => $balance->map(function($value, $date) use ($balance) {
+                            return $balance->takeUntil(function($value, $key) use ($date) {
+                                return $date == $key;
+                            })->sum() + $value;
+                        })->values()->all(),
                     ]))
                     ->options([
                         'xaxis' => [
-                            'categories' => $this->categories(),
+                            'categories' => $payments->keys()->all(),
                         ],
                     ])
                     ->width('full')
@@ -296,46 +290,6 @@ class ContractsReport extends Dashboard
                     ]),
             ];
         }); 
-    }
-
-    /**
-     * Returns an array of the year months.
-     * 
-     * @return array
-     */
-    public function months()
-    {
-        return collect($this->duration())->map->format($this->dateFormat())->all();
-    }
-
-    public function categories()
-    {
-        return collect($this->months())->map(function($date) {
-            return now()->format($this->dateFormat()) == $date ? now()->format('Y/M') : $date;
-        })->all();
-    }
-
-    /**
-     * Returns an array of the year months.
-     * 
-     * @return array
-     */
-    public function duration()
-    {
-        return [ 
-            now()->subMonths(6),
-            now()->subMonths(5),
-            now()->subMonths(4),
-            now()->subMonths(3),
-            now()->subMonths(2),
-            now()->subMonths(1),
-            now(),
-            now()->addMonths(1),
-            now()->addMonths(2),
-            now()->addMonths(3),
-            now()->addMonths(4),
-            now()->addMonths(5),
-        ];
     } 
 
     /**
@@ -345,7 +299,7 @@ class ContractsReport extends Dashboard
      */
     public function dateFormat()
     {
-        return 'M';
+        return 'y/m';
     }
 
     /**
