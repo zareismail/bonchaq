@@ -186,7 +186,7 @@ class Contract extends Resource
                 });
             })
             ->tap(function($query) use ($request) { 
-	            $query->with('contractable', function($morphTo) use ($morphs) {
+	            $query->with('contractable', function($morphTo) {
 	                return $morphTo->morphWith(Helper::morphs());
 	            });
 	        });
