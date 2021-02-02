@@ -166,8 +166,8 @@ class Contract extends Resource
 
             HasMany::make(__('Maturities'), 'maturities', Maturity::class),
     	];
-    }
-    
+    } 
+
     /**
      * Build an "index" query for the given resource.
      *
@@ -178,18 +178,16 @@ class Contract extends Resource
     public static function indexQuery(NovaRequest $request, $query)
     {
         return $query
-        	->when(static::shouldAuthenticate($request, $query), function($query) use ($morphs) {
-                $query->orWhereHasMorph('contractable', $morphs, function($query, $type) { 
+        	->when(static::shouldAuthenticate($request, $query), function($query) {
+                $query->orWhereHasMorph('contractable', Helper::morphs(), function($query, $type) { 
                     if(\Zareismail\NovaPolicy\Helper::isOwnable($type)) {
                         $query->authenticate();
                     }
                 });
             })
-            ->tap(function($query) use ($request) {
-	            $morphs = Helper::morphs();
-
+            ->tap(function($query) use ($request) { 
 	            $query->with('contractable', function($morphTo) use ($morphs) {
-	                return $morphTo->morphWith($morphs);
+	                return $morphTo->morphWith(Helper::morphs());
 	            });
 	        });
     }
