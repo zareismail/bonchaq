@@ -217,6 +217,11 @@ class ContractsReport extends Dashboard
                         $query->whereHasMorph(
                             'contractable', [$resource::newModel()->getMorphClass()], $queryCallback
                         ); 
+                    }) 
+                    ->whereHasMorph('contractable', Helper::morphs(), function($query, $type) { 
+                        if(\Zareismail\NovaPolicy\Helper::isOwnable($type) && request()->user()->cant('forceDelete', $type)) {
+                            $query->authenticate();
+                        }
                     });
             }
         ])->get()->flatMap(function($subject) { 
