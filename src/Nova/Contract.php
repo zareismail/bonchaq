@@ -249,9 +249,11 @@ class Contract extends Resource
     public function cards(Request $request)
     {
         return [
-            Metrics\Costs::make()->width('1/2'), 
+            Metrics\ContractsPerStatus::make()->width('1/3'), 
 
-            Metrics\Revenues::make()->width('1/2'),
+            Metrics\Costs::make()->width('1/3'), 
+
+            Metrics\Revenues::make()->width('1/3'),
         ];
     }
 
