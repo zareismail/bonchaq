@@ -156,7 +156,7 @@ class Contract extends Resource
                     return __('Until:');
                 },
 
-                DateTime::make(__('Start Date'), 'start_date'),
+                DateTime::make(__('End Date'), 'end_date'),
             ])->onlyOnIndex(), 
 
             Medialibrary::make(__('Attachments'), 'attachments')
