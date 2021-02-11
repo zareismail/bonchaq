@@ -2,12 +2,13 @@
 
 namespace Zareismail\Bonchaq\Models;
 
+use Illuminate\Database\Eloquent\SoftDeletes;   
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\{Model as LaravelModel, SoftDeletes};   
-use Spatie\MediaLibrary\HasMedia\HasMedia;
+use Zareismail\NovaContracts\Models\AuthorizableModel;
 use Spatie\MediaLibrary\HasMedia\HasMediaTrait;
+use Spatie\MediaLibrary\HasMedia\HasMedia;
 
-class Model extends LaravelModel implements HasMedia
+class Model extends AuthorizableModel implements HasMedia
 { 
     use HasFactory, SoftDeletes, HasMediaTrait;  
 

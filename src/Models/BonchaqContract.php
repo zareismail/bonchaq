@@ -1,15 +1,12 @@
 <?php
 
 namespace Zareismail\Bonchaq\Models;
-
-use Zareismail\NovaContracts\Models\AuthorizableModel;
-use Spatie\MediaLibrary\HasMedia\HasMedia;
-use Spatie\MediaLibrary\HasMedia\HasMediaTrait;
+ 
 use Zareismail\Bonchaq\Helper;
 
-class BonchaqContract extends AuthorizableModel implements HasMedia
+class BonchaqContract extends Model  
 { 
-	use HasMediaTrait, InteractsWithMaturities;
+	use InteractsWithMaturities;
 	
     /**
      * The attributes that should be cast.
