@@ -177,7 +177,7 @@ class Contract extends Resource
      */
     public static function indexQuery(NovaRequest $request, $query)
     {
-        return $query
+        return parent::indexQuery($request, $query)
         	->when(static::shouldAuthenticate($request, $query), function($query) {
                 $query->orWhereHasMorph('contractable', Helper::morphs(), function($query, $type) { 
                     if(\Zareismail\NovaPolicy\Helper::isOwnable($type)) {
