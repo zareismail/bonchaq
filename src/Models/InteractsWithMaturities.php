@@ -23,7 +23,7 @@ trait InteractsWithMaturities
      */
     public function creatInstallments()
     {
-        collect()->range(0, $this->installments)->each(function($installment) {
+        collect()->range(1, $this->installments)->each(function($installment) {
             $this->fillMaturity($installment)->save();
         });
     }
