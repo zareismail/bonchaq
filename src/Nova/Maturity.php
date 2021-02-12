@@ -3,6 +3,7 @@
 namespace Zareismail\Bonchaq\Nova; 
 
 use Illuminate\Http\Request; 
+use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Fields\{ID, Text, Number, Currency, DateTime, BelongsTo}; 
 use DmitryBubyakin\NovaMedialibraryField\Fields\Medialibrary; 
 use Zareismail\NovaContracts\Nova\User; 
@@ -122,6 +123,24 @@ class Maturity extends Resource
                 ->hideFromIndex()
                 ->nullable(),
     	];
+    }
+
+    /**
+     * Build an "index" query for the given resource.
+     *
+     * @param  \Laravel\Nova\Http\Requests\NovaRequest  $request
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public static function indexQuery(NovaRequest $request, $query)
+    {
+        return $query->when(static::shouldAuthenticate($request, $query), function($query) use ($request) {
+            $query->where(function($query) use ($request) {
+                $query->authenticate()->orWhereHas('contract', function($query) use ($request) { 
+                    Contract::indexQuery($request, $query);
+                });
+            });
+        });
     }
 
     /**
