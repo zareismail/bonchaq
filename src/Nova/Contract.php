@@ -299,4 +299,17 @@ class Contract extends Resource
             }); 
         });
     }
+    
+    /**
+     * Determine if the current user can view the given resource.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $ability
+     * @return bool
+     */
+    public function authorizedTo(Request $request, $ability)
+    { 
+        return parent::authorizedTo($request, $ability) ||
+                $request->user()->can($ability, optional($this->resource)->contractable);
+    }
 }
