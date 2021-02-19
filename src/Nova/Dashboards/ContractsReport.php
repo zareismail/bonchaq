@@ -225,7 +225,7 @@ class ContractsReport extends Dashboard
                     });
             }
         ])->get()->flatMap(function($subject) { 
-            $payments = $subject->contracts->flatMap->maturities->groupBy(function($maturity) {
+            $payments = $subject->contracts->flatMap->maturities->sortBy('payment_date')->groupBy(function($maturity) {
                 return $maturity->payment_date->startOfMonth()->format($this->dateFormat());
             });
             $sum = $payments->map->sum('amount');
