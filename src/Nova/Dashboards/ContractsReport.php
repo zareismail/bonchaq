@@ -31,17 +31,17 @@ class ContractsReport extends Dashboard
     public function filters(NovaRequest $request)
     { 
         return $this->filter([  
-            Select::make(__('Which Reprot'), 'revenue') 
-                ->options([
-                    'expenditures' => __('Expenditures'),
-                    'revenue' => __('Revenue'),
-                ])
-                ->displayUsingLabels()
-                ->default('revenue')
-                ->withMeta([
-                    'width' => 'w-1/5',
-                    'value' => $request->get('revenue', 'revenue'),
-                ]),  
+            // Select::make(__('Which Reprot'), 'revenue') 
+            //     ->options([
+            //         'expenditures' => __('Expenditures'),
+            //         'revenue' => __('Revenue'),
+            //     ])
+            //     ->displayUsingLabels()
+            //     ->default('revenue')
+            //     ->withMeta([
+            //         'width' => 'w-1/5',
+            //         'value' => $request->get('revenue', 'revenue'),
+            //     ]),  
 
             DateTime::make(__('From Date'), 'from_date', function($value) { 
                 $date = is_null($value) ? now()->startOfMonth()->subMonths(11) : \Carbon\Carbon::create($value);
@@ -177,11 +177,11 @@ class ContractsReport extends Dashboard
         return Subject::newModel()->with([
             'contracts' => function($query) {
                 $query
-                    ->when(request()->input('revenue') === 'expenditures', function($query) {
+                    /*->when(request()->input('revenue') === 'expenditures', function($query) {
                         $query->authenticate();
                     }, function($query) {
                         $query->where('auth_id', '!=', request()->user()->id);
-                    }) 
+                    })*/ 
                     ->with([
                         'maturities' => function($query) {
                             $query->when(request()->filled('from_date'), function($query) {
@@ -219,9 +219,10 @@ class ContractsReport extends Dashboard
                         ); 
                     }) 
                     ->whereHasMorph('contractable', Helper::morphs(), function($query, $type) { 
-                        if(\Zareismail\NovaPolicy\Helper::isOwnable($type) && request()->user()->cant('forceDelete', $type)) {
-                            $query->authenticate();
-                        }
+//                         if(\Zareismail\NovaPolicy\Helper::isOwnable($type) && request()->user()->cant('forceDelete', $type)) {
+//                             $query->authenticate();
+//                         }
+                        forward_static_call([Nova::resourceForModel($type), 'indexQuery'], app(NovaRequest::class), $query);
                     });
             }
         ])->get()->flatMap(function($subject) { 
