@@ -180,9 +180,7 @@ class Contract extends Resource
         return parent::indexQuery($request, $query)
         	->when(static::shouldAuthenticate($request, $query), function($query) {
                 $query->orWhereHasMorph('contractable', Helper::morphs(), function($query, $type) { 
-                    if(\Zareismail\NovaPolicy\Helper::isOwnable($type)) {
-                        $query->authenticate();
-                    }
+                    forward_static_call([Nova::resourceForModel($type), 'indexQuery'], app(NovaRequest::class), $query);
                 });
             })
             ->tap(function($query) use ($request) { 
