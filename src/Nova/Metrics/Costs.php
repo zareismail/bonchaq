@@ -14,6 +14,6 @@ class Costs extends MetricValue
      */
     public function calculate(NovaRequest $request)
     {
-        return $this->sum($request, $this->newCostQuery($request), 'amount');
+        return $this->sum($request, $this->newCostQuery($request), 'amount', 'payment_date');
     }
 }
