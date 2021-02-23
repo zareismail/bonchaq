@@ -14,6 +14,6 @@ class Revenues extends MetricValue
      */
     public function calculate(NovaRequest $request)
     {
-        return $this->sum($request, $this->newRevenueQuery($request), 'amount');
+        return $this->sum($request, $this->newRevenueQuery($request), 'amount', 'payment_date');
     }
 }
