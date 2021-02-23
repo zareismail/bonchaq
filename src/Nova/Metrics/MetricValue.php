@@ -53,13 +53,11 @@ abstract class MetricValue extends Value
     public function ranges()
     {
         return [
+            'ALL' => 'ALL',
             30 => '30 Days',
             60 => '60 Days',
-            365 => '365 Days',
-            'TODAY' => 'Today',
-            'MTD' => 'Month To Date',
-            'QTD' => 'Quarter To Date',
-            'YTD' => 'Year To Date',
+            90 => '90 Days',
+            365 => '365 Days', 
         ];
     }
 
