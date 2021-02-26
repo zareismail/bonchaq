@@ -207,7 +207,7 @@ class ContractsReport extends Dashboard
                     }) 
                     ->whereHasMorph('contractable', Helper::morphs(), function($query, $type) {  
                         forward_static_call(
-                            [Nova::resourceForModel($type), 'indexQuery'], app(NovaRequest::class), $query
+                            [Nova::resourceForModel($type), 'buildIndexQuery'], app(NovaRequest::class), $query
                         );
                     });
             }
