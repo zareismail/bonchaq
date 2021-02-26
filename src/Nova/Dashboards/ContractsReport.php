@@ -30,19 +30,7 @@ class ContractsReport extends Dashboard
 
     public function filters(NovaRequest $request)
     { 
-        return $this->filter([  
-            // Select::make(__('Which Reprot'), 'revenue') 
-            //     ->options([
-            //         'expenditures' => __('Expenditures'),
-            //         'revenue' => __('Revenue'),
-            //     ])
-            //     ->displayUsingLabels()
-            //     ->default('revenue')
-            //     ->withMeta([
-            //         'width' => 'w-1/5',
-            //         'value' => $request->get('revenue', 'revenue'),
-            //     ]),  
-
+        return $this->filter([   
             DateTime::make(__('From Date'), 'from_date', function($value) { 
                 $date = is_null($value) ? now()->startOfMonth()->subMonths(11) : \Carbon\Carbon::create($value);
                 
@@ -180,12 +168,7 @@ class ContractsReport extends Dashboard
         
         return Subject::newModel()->with([
             'contracts' => function($query) {
-                $query
-                    /*->when(request()->input('revenue') === 'expenditures', function($query) {
-                        $query->authenticate();
-                    }, function($query) {
-                        $query->where('auth_id', '!=', request()->user()->id);
-                    })*/ 
+                $query 
                     ->with([
                         'maturities' => function($query) {
                             $query->when(request()->filled('from_date'), function($query) {
