@@ -4,12 +4,11 @@ namespace Zareismail\Bonchaq\Nova\Dashboards;
 
 use Illuminate\Support\Str;
 use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
-use Laravel\Nova\Dashboard;
+use Laravel\Nova\{Nova, Dashboard};
 use Laravel\Nova\Http\Requests\NovaRequest;
-use Laravel\Nova\Fields\{Select, DateTime};
-use Laravel\Nova\Nova;
+use Laravel\Nova\Fields\{Select, DateTime}; 
 use Coroowicaksono\ChartJsIntegration\LineChart;
-use Zareismail\Bonchaq\Nova\{Subject, Maturity, Contract}; 
+use Zareismail\Bonchaq\Nova\{Subject, Contract}; 
 use Zareismail\Bonchaq\Helper; 
 use Zareismail\Fields\Contracts\Cascade;
 
