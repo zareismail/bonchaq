@@ -218,11 +218,10 @@ class ContractsReport extends Dashboard
                             'contractable', [$resource::newModel()->getMorphClass()], $queryCallback
                         ); 
                     }) 
-                    ->whereHasMorph('contractable', Helper::morphs(), function($query, $type) { 
-//                         if(\Zareismail\NovaPolicy\Helper::isOwnable($type) && request()->user()->cant('forceDelete', $type)) {
-//                             $query->authenticate();
-//                         }
-                        forward_static_call([Nova::resourceForModel($type), 'indexQuery'], app(NovaRequest::class), $query);
+                    ->whereHasMorph('contractable', Helper::morphs(), function($query, $type) {  
+                        forward_static_call(
+                            [Nova::resourceForModel($type), 'indexQuery'], app(NovaRequest::class), $query
+                        );
                     });
             }
         ])->get()->flatMap(function($subject) { 
@@ -230,7 +229,9 @@ class ContractsReport extends Dashboard
                 return $maturity->payment_date->startOfMonth()->format($this->dateFormat());
             });
             $sum = $payments->map->sum('amount');
-            $balance = $payments->map->sum('contract.amount');
+            $balance = $payments->map->sum(function($payment) use ($subject) {
+                return $subject->contracts->find($payment->contract_id)->amount;
+            });
 
             return [
                 (new LineChart())
