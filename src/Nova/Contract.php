@@ -183,16 +183,16 @@ class Contract extends Resource
                                       array $filters = [], array $orderings = [],
                                       $withTrashed = TrashedStatus::DEFAULT)
     { 
-        $queryCallback = function($query) {
-            $query->orWhereHasMorph('contractable', Helper::morphs(), function($query, $type) { 
-                forward_static_call(
-                    [Nova::resourceForModel($type), 'buildIndexQuery'], app(NovaRequest::class), $query
-                );
-            });
-        };
-
-        return parent::buildIndexQuery($request, $query, $search, $filters, $orderings, $withTrashed)
-                ->when(static::shouldAuthenticate($request, $query), $queryCallback);
+        return $query->where(function($query) use ($request, $search, $filters, $orderings, $withTrashed) {
+            parent::buildIndexQuery($request, $query, $search, $filters, $orderings, $withTrashed)
+                ->when(static::shouldAuthenticate($request, $query), function($query) {
+                    $query->orWhereHasMorph('contractable', Helper::morphs(), function($query, $type) { 
+                        forward_static_call(
+                            [Nova::resourceForModel($type), 'buildIndexQuery'], app(NovaRequest::class), $query
+                        );
+                    });
+                });
+        }); 
     }
 
     /**
