@@ -140,12 +140,14 @@ class Maturity extends Resource
                                       array $filters = [], array $orderings = [],
                                       $withTrashed = TrashedStatus::DEFAULT)
     { 
-        return parent::buildIndexQuery($request, $query, $search, $filters, $orderings, $withTrashed)
+        return $query->where(function($query) use ($request, $search, $filters, $orderings, $withTrashed) {
+            parent::buildIndexQuery($request, $query, $search, $filters, $orderings, $withTrashed)
                 ->when(static::shouldAuthenticate($request, $query), function($query) use ($request, $search) {
                     $query->orWhereHas('contract', function($query) use ($request) { 
                         Contract::buildIndexQuery($request, $query);
                     });
                 });
+        });
     } 
 
     /**
