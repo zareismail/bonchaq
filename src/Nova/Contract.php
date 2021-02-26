@@ -4,7 +4,7 @@ namespace Zareismail\Bonchaq\Nova;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Laravel\Nova\Nova; 
+use Laravel\Nova\{Nova, TrashedStatus}; 
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Fields\{ID, Stack, Number, Select, Currency, DateTime, BelongsTo, HasMany}; 
 use DmitryBubyakin\NovaMedialibraryField\Fields\Medialibrary;
@@ -173,21 +173,41 @@ class Contract extends Resource
      *
      * @param  \Laravel\Nova\Http\Requests\NovaRequest  $request
      * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string|null  $search
+     * @param  array  $filters
+     * @param  array  $orderings
+     * @param  string  $withTrashed
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public static function buildIndexQuery(NovaRequest $request, $query, $search = null,
+                                      array $filters = [], array $orderings = [],
+                                      $withTrashed = TrashedStatus::DEFAULT)
+    {
+        $query = $query->when(static::shouldAuthenticate($request, $query), function($query) {
+            $query->orWhereHasMorph('contractable', Helper::morphs(), function($query, $type) { 
+                forward_static_call(
+                    [Nova::resourceForModel($type), 'buildIndexQuery'], app(NovaRequest::class), $query
+                );
+            });
+        });
+
+        return parent::buildIndexQuery($request, $query, $search, $filters, $orderings, $withTrashed);
+    }
+
+    /**
+     * Build an "index" query for the given resource.
+     *
+     * @param  \Laravel\Nova\Http\Requests\NovaRequest  $request
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public static function indexQuery(NovaRequest $request, $query)
     {
-        return parent::indexQuery($request, $query)
-        	->when(static::shouldAuthenticate($request, $query), function($query) {
-                $query->orWhereHasMorph('contractable', Helper::morphs(), function($query, $type) { 
-                    forward_static_call([Nova::resourceForModel($type), 'indexQuery'], app(NovaRequest::class), $query);
-                });
-            })
-            ->tap(function($query) use ($request) { 
-	            $query->with('contractable', function($morphTo) {
-	                return $morphTo->morphWith(Helper::morphs());
-	            });
-	        });
+        return parent::indexQuery($request, $query)->tap(function($query) use ($request) { 
+            $query->with('contractable', function($morphTo) {
+                return $morphTo->morphWith(Helper::morphs());
+            });
+        });
     }
 
     /**
