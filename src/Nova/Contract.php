@@ -166,33 +166,26 @@ class Contract extends Resource
 
             HasMany::make(__('Maturities'), 'maturities', Maturity::class),
     	];
-    } 
+    }  
 
     /**
-     * Build an "index" query for the given resource.
+     * Authenticate the query for the given request.
      *
      * @param  \Laravel\Nova\Http\Requests\NovaRequest  $request
      * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  string|null  $search
-     * @param  array  $filters
-     * @param  array  $orderings
-     * @param  string  $withTrashed
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public static function buildIndexQuery(NovaRequest $request, $query, $search = null,
-                                      array $filters = [], array $orderings = [],
-                                      $withTrashed = TrashedStatus::DEFAULT)
-    { 
-        return $query->where(function($query) use ($request, $search, $filters, $orderings, $withTrashed) {
-            parent::buildIndexQuery($request, $query, $search, $filters, $orderings, $withTrashed)
-                ->when(static::shouldAuthenticate($request, $query), function($query) {
-                    $query->orWhereHasMorph('contractable', Helper::morphs(), function($query, $type) { 
-                        forward_static_call(
-                            [Nova::resourceForModel($type), 'buildIndexQuery'], app(NovaRequest::class), $query
-                        );
-                    });
+    public static function authenticateQuery(NovaRequest $request, $query)
+    {
+        return $query->where(function($query) use ($request) {
+            $query->when(static::shouldAuthenticate($request, $query), function($query) {
+                $query->authenticate()->orWhereHasMorph('contractable', Helper::morphs(), function($query, $type) { 
+                    forward_static_call(
+                        [Nova::resourceForModel($type), 'buildIndexQuery'], app(NovaRequest::class), $query
+                    );
                 });
-        }); 
+            });
+        });
     }
 
     /**
@@ -208,6 +201,8 @@ class Contract extends Resource
             $query->with('contractable', function($morphTo) {
                 return $morphTo->morphWith(Helper::morphs());
             });
+
+            $query->with('subject');
         });
     }
 

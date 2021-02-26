@@ -47,7 +47,7 @@ class Maturity extends Resource
      * @return array
      */
     public function fields(Request $request)
-    {
+    { 
     	return [
     		ID::make(), 
 
@@ -123,32 +123,25 @@ class Maturity extends Resource
                 ->hideFromIndex()
                 ->nullable(),
     	];
-    }
+    } 
 
     /**
-     * Build an "index" query for the given resource.
+     * Authenticate the query for the given request.
      *
      * @param  \Laravel\Nova\Http\Requests\NovaRequest  $request
      * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  string|null  $search
-     * @param  array  $filters
-     * @param  array  $orderings
-     * @param  string  $withTrashed
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public static function buildIndexQuery(NovaRequest $request, $query, $search = null,
-                                      array $filters = [], array $orderings = [],
-                                      $withTrashed = TrashedStatus::DEFAULT)
-    { 
-        return $query->where(function($query) use ($request, $search, $filters, $orderings, $withTrashed) {
-            parent::buildIndexQuery($request, $query, $search, $filters, $orderings, $withTrashed)
-                ->when(static::shouldAuthenticate($request, $query), function($query) use ($request, $search) {
-                    $query->orWhereHas('contract', function($query) use ($request) { 
-                        Contract::buildIndexQuery($request, $query);
-                    });
+    public static function authenticateQuery(NovaRequest $request, $query)
+    {
+        return $query->where(function($query) use ($request) {
+            $query->when(static::shouldAuthenticate($request, $query), function($query) {
+                $query->authenticate()->orWhereHas('contract', function($query) { 
+                    Contract::buildIndexQuery(app(NovaRequest::class), $query);
                 });
+            });
         });
-    } 
+    }
 
     /**
      * Build an "index" query for the given resource.
@@ -159,8 +152,8 @@ class Maturity extends Resource
      */
     public static function indexQuery(NovaRequest $request, $query)
     {
-        return $query->with(['contract' => function($query) {
-            $query->withTrashed();
+        return $query->with(['contract' => function($query) use ($request) { 
+            Contract::buildIndexQuery($request, $query->withTrashed());
         }]);
     }
 
