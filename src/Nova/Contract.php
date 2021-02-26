@@ -182,16 +182,17 @@ class Contract extends Resource
     public static function buildIndexQuery(NovaRequest $request, $query, $search = null,
                                       array $filters = [], array $orderings = [],
                                       $withTrashed = TrashedStatus::DEFAULT)
-    {
-        $query = $query->when(static::shouldAuthenticate($request, $query), function($query) {
+    { 
+        $queryCallback = function($query) {
             $query->orWhereHasMorph('contractable', Helper::morphs(), function($query, $type) { 
                 forward_static_call(
                     [Nova::resourceForModel($type), 'buildIndexQuery'], app(NovaRequest::class), $query
                 );
             });
-        });
+        };
 
-        return parent::buildIndexQuery($request, $query, $search, $filters, $orderings, $withTrashed);
+        return parent::buildIndexQuery($request, $query, $search, $filters, $orderings, $withTrashed)
+                ->when(static::shouldAuthenticate($request, $query), $queryCallback);
     }
 
     /**
