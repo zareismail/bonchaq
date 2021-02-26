@@ -303,16 +303,10 @@ class Contract extends Resource
     { 
         return parent::applySearch($query, $search)->orWhere(function($query) use ($search) {
             $query->orWhereHasMorph('contractable', Helper::morphs(), function($morphTo, $type) use ($search) {
-                $morphTo->where(function($query) use ($type, $search) {
-                    $resource = Nova::resourceForModel($type);
-
-                    foreach ($resource::searchableColumns() as $column) {
-                        $query->orWhere($query->qualifyColumn($column), 'like', '%'.$search.'%');
-                    }  
-
-                    if(method_exists($resource, 'applyContractSearch')) {
-                        $resource::applyContractSearch($query, $search);  
-                    }
+                $morphTo->where(function($query) use ($type, $search) { 
+                    forward_static_call(
+                        [Nova::resourceForModel($type), 'buildIndexQuery'], app(NovaRequest::class), $query, $search
+                    ); 
                 });
             }); 
         });

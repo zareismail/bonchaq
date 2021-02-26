@@ -29,7 +29,7 @@ class Maturity extends Resource
      *
      * @var array
      */
-    public static $with = ['contract', 'auth'];
+    public static $with = ['auth'];
 
     /**
      * The columns that should be searched.
@@ -130,18 +130,23 @@ class Maturity extends Resource
      *
      * @param  \Laravel\Nova\Http\Requests\NovaRequest  $request
      * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string|null  $search
+     * @param  array  $filters
+     * @param  array  $orderings
+     * @param  string  $withTrashed
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public static function indexQuery(NovaRequest $request, $query)
-    {
-        return $query->when(static::shouldAuthenticate($request, $query), function($query) use ($request) {
-            $query->where(function($query) use ($request) {
-                $query->authenticate()->orWhereHas('contract', function($query) use ($request) { 
-                    Contract::indexQuery($request, $query);
+    public static function buildIndexQuery(NovaRequest $request, $query, $search = null,
+                                      array $filters = [], array $orderings = [],
+                                      $withTrashed = TrashedStatus::DEFAULT)
+    { 
+        return parent::buildIndexQuery($request, $query, $search, $filters, $orderings, $withTrashed)
+                ->when(static::shouldAuthenticate($request, $query), function($query) use ($request, $search) {
+                    $query->orWhereHas('contract', function($query) use ($request) { 
+                        Contract::buildIndexQuery($request, $query);
+                    });
                 });
-            });
-        });
-    }
+    } 
 
     /**
      * Get the value that should be displayed to represent the resource.
@@ -150,7 +155,7 @@ class Maturity extends Resource
      */
     public function title()
     {
-        $contract = new Contract($this->contract);
+        $contract = new Contract($this->contract ?? Contract::newModel());
 
         return __('Due :number [:contract]', [
             'number' => $this->installment,
