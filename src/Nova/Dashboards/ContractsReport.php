@@ -9,8 +9,7 @@ use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Fields\{Select, DateTime};
 use Laravel\Nova\Nova;
 use Coroowicaksono\ChartJsIntegration\LineChart;
-use Zareismail\Bonchaq\Nova\Maturity;
-use Zareismail\Bonchaq\Nova\Subject; 
+use Zareismail\Bonchaq\Nova\{Subject, Maturity, Contract}; 
 use Zareismail\Bonchaq\Helper; 
 use Zareismail\Fields\Contracts\Cascade;
 
@@ -168,8 +167,7 @@ class ContractsReport extends Dashboard
         
         return Subject::newModel()->with([
             'contracts' => function($query) {
-                $query 
-                    ->with([
+                Contract::buildIndexQuery(app(NovaRequest::class), $query)->with([
                         'maturities' => function($query) {
                             $query->when(request()->filled('from_date'), function($query) {
                                 $query->whereDate('payment_date', '>=', request()->get('from_date'));
@@ -204,11 +202,6 @@ class ContractsReport extends Dashboard
                         $query->whereHasMorph(
                             'contractable', [$resource::newModel()->getMorphClass()], $queryCallback
                         ); 
-                    }) 
-                    ->whereHasMorph('contractable', Helper::morphs(), function($query, $type) {  
-                        forward_static_call(
-                            [Nova::resourceForModel($type), 'buildIndexQuery'], app(NovaRequest::class), $query
-                        );
                     });
             }
         ])->get()->flatMap(function($subject) { 
