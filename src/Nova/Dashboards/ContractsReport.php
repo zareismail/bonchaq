@@ -174,6 +174,10 @@ class ContractsReport extends Dashboard
      */
     public function cards()
     { 
+        if(request()->route('dashboard') !== static::uriKey()) {
+            return [];
+        }
+        
         return Subject::newModel()->with([
             'contracts' => function($query) {
                 $query
