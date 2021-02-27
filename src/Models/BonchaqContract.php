@@ -33,6 +33,16 @@ class BonchaqContract extends Model
 
         static::created(function($model) {
             $model->creatInstallments();
+        });  
+
+        static::deleting(function($model) {
+            $method = $model->isForceDeleting() ? 'forceDelete' : 'delete';
+
+             $model->maturities()->{$method}();
+        }); 
+
+        static::restored(function($model) {
+            $model->maturities()->onlyTrashed()->restore();
         }); 
     }
 
